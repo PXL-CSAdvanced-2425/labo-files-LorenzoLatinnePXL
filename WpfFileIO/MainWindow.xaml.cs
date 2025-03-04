@@ -33,23 +33,53 @@ namespace WpfFileIO
 
             if (!String.IsNullOrEmpty(firstName) && !String.IsNullOrEmpty(lastName))
             {
-                firstNameListBox.Items.Add(firstName);
-                lastNameListBox.Items.Add(lastName);
+                ListBoxItem firstNameItem = new ListBoxItem();
+                firstNameItem.Content = firstName;
+
+                ListBoxItem lastNameItem = new ListBoxItem();
+                lastNameItem.Content = lastName;
+
+                firstNameListBox.Items.Add(firstNameItem);
+                lastNameListBox.Items.Add(lastNameItem);
                 ClearTextBoxes();
             }
         }
 
         private void readFileButton_Click(object sender, RoutedEventArgs e)
         {
+            firstNameListBox.Items.Clear();
+            lastNameListBox.Items.Clear();
+
+            List<string> names = new List<string>();
+
             using (FileStream fsr = new FileStream("names.txt", FileMode.Open, FileAccess.Read))
             {
                 using (StreamReader sr = new StreamReader(fsr))
                 {
-                    string name = sr.ReadToEnd();
-                    string[] changedNames = name.Split(' ');
-                    foreach (string fullName in changedNames)
+                    while (!sr.EndOfStream)
                     {
-                        Console.WriteLine(fullName);
+                        names.Add(sr.ReadToEnd());
+                    }
+
+                    foreach (string item in names)
+                    {
+                        Console.WriteLine(item);
+                    }
+
+                    for (int i = 0; i < names.Count; i++)
+                    {
+                        if (i == 0 || i % 2 == 0)
+                        {
+                            ListBoxItem firstName = new ListBoxItem();
+                            firstName.Content = names[i];
+                            firstNameListBox.Items.Add(firstName);
+                        }
+                        else
+                        {
+                            ListBoxItem lastName = new ListBoxItem();
+                            lastName.Content = names[i];
+                            lastNameListBox.Items.Add(lastName);
+                        }
                     }
                 }
             }
@@ -63,9 +93,15 @@ namespace WpfFileIO
                 {
                     for (int i = 0; i < firstNameListBox.Items.Count; i++)
                     {
-                        sw.Write(firstNameListBox.Items[i]);
+                        ListBoxItem firstNameItem = new ListBoxItem();
+                        firstNameItem = firstNameListBox.Items[i] as ListBoxItem;
+
+                        ListBoxItem lastNameItem = new ListBoxItem();
+                        lastNameItem = lastNameListBox.Items[i] as ListBoxItem;
+
+                        sw.Write(firstNameItem.Content);
                         sw.Write(" ");
-                        sw.WriteLine(lastNameListBox.Items[i]);
+                        sw.WriteLine(lastNameItem.Content);
                     }
                 }
             }
