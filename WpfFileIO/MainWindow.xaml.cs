@@ -21,6 +21,7 @@ namespace WpfFileIO
     /// </summary>
     public partial class MainWindow : Window
     {
+        private const string _fileName = "names.csv";
         public MainWindow()
         {
             InitializeComponent();
@@ -50,44 +51,30 @@ namespace WpfFileIO
             firstNameListBox.Items.Clear();
             lastNameListBox.Items.Clear();
 
-            List<string> names = new List<string>();
-
-            using (FileStream fsr = new FileStream("names.txt", FileMode.Open, FileAccess.Read))
+            using (StreamReader sr = new StreamReader(_fileName))
             {
-                using (StreamReader sr = new StreamReader(fsr))
+                while (!sr.EndOfStream)
                 {
-                    while (!sr.EndOfStream)
-                    {
-                        names.Add(sr.ReadToEnd());
-                    }
+                    string lineOfText = sr.ReadLine();              // "firstname;lastname"
+                    string[] allNames = lineOfText.Split(';');      // [ "firstname", "lastname" ]
+                    string firstName = allNames[0];                 // "firstname"
+                    string lastName = allNames[1];                  // "lastname"
 
-                    foreach (string item in names)
-                    {
-                        Console.WriteLine(item);
-                    }
+                    ListBoxItem firstNameItem = new ListBoxItem();
+                    firstNameItem.Content = firstName;
 
-                    for (int i = 0; i < names.Count; i++)
-                    {
-                        if (i == 0 || i % 2 == 0)
-                        {
-                            ListBoxItem firstName = new ListBoxItem();
-                            firstName.Content = names[i];
-                            firstNameListBox.Items.Add(firstName);
-                        }
-                        else
-                        {
-                            ListBoxItem lastName = new ListBoxItem();
-                            lastName.Content = names[i];
-                            lastNameListBox.Items.Add(lastName);
-                        }
-                    }
+                    ListBoxItem lastNameItem = new ListBoxItem();
+                    lastNameItem.Content = lastName;
+
+                    firstNameListBox.Items.Add(firstNameItem);
+                    lastNameListBox.Items.Add(lastNameItem);
                 }
             }
         }
 
         private void saveFileButton_Click(object sender, RoutedEventArgs e)
         {
-            using (FileStream fsw = new FileStream("names.txt", FileMode.Create, FileAccess.Write))
+            using (FileStream fsw = new FileStream(_fileName, FileMode.Create, FileAccess.Write))
             {
                 using (StreamWriter sw = new StreamWriter(fsw))
                 {
@@ -99,9 +86,7 @@ namespace WpfFileIO
                         ListBoxItem lastNameItem = new ListBoxItem();
                         lastNameItem = lastNameListBox.Items[i] as ListBoxItem;
 
-                        sw.Write(firstNameItem.Content);
-                        sw.Write(" ");
-                        sw.WriteLine(lastNameItem.Content);
+                        sw.WriteLine($"{firstNameItem.Content};{lastNameItem.Content}");
                     }
                 }
             }
