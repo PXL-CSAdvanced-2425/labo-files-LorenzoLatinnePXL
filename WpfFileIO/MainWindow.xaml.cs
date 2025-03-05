@@ -1,18 +1,8 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace WpfFileIO
 {
@@ -51,42 +41,61 @@ namespace WpfFileIO
             firstNameListBox.Items.Clear();
             lastNameListBox.Items.Clear();
 
-            using (StreamReader sr = new StreamReader(_fileName))
+            // using Microsoft.Win32;
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.FileName = _fileName;
+            ofd.InitialDirectory = Environment.CurrentDirectory;
+
+            if (ofd.ShowDialog() == true) // als true, dan geldig bestand in ofd
             {
-                while (!sr.EndOfStream)
+                string fileNameFromOFD = ofd.FileName;
+
+                using (StreamReader sr = new StreamReader(fileNameFromOFD))
                 {
-                    string lineOfText = sr.ReadLine();              // "firstname;lastname"
-                    string[] allNames = lineOfText.Split(';');      // [ "firstname", "lastname" ]
-                    string firstName = allNames[0];                 // "firstname"
-                    string lastName = allNames[1];                  // "lastname"
+                    while (!sr.EndOfStream)
+                    {
+                        string lineOfText = sr.ReadLine();              // "firstname;lastname"
+                        string[] allNames = lineOfText.Split(';');      // [ "firstname", "lastname" ]
+                        string firstName = allNames[0];                 // "firstname"
+                        string lastName = allNames[1];                  // "lastname"
 
-                    ListBoxItem firstNameItem = new ListBoxItem();
-                    firstNameItem.Content = firstName;
+                        ListBoxItem firstNameItem = new ListBoxItem();
+                        firstNameItem.Content = firstName;
 
-                    ListBoxItem lastNameItem = new ListBoxItem();
-                    lastNameItem.Content = lastName;
+                        ListBoxItem lastNameItem = new ListBoxItem();
+                        lastNameItem.Content = lastName;
 
-                    firstNameListBox.Items.Add(firstNameItem);
-                    lastNameListBox.Items.Add(lastNameItem);
+                        firstNameListBox.Items.Add(firstNameItem);
+                        lastNameListBox.Items.Add(lastNameItem);
+                    }
                 }
             }
         }
 
         private void saveFileButton_Click(object sender, RoutedEventArgs e)
         {
-            using (FileStream fsw = new FileStream(_fileName, FileMode.Create, FileAccess.Write))
+            SaveFileDialog sfd = new SaveFileDialog()
             {
-                using (StreamWriter sw = new StreamWriter(fsw))
+                FileName = _fileName,
+                InitialDirectory = Environment.CurrentDirectory
+            };
+
+            if (sfd.ShowDialog() == true)
+            {
+                using (FileStream fsw = new FileStream(_fileName, FileMode.Create, FileAccess.Write))
                 {
-                    for (int i = 0; i < firstNameListBox.Items.Count; i++)
+                    using (StreamWriter sw = new StreamWriter(fsw))
                     {
-                        ListBoxItem firstNameItem = new ListBoxItem();
-                        firstNameItem = firstNameListBox.Items[i] as ListBoxItem;
+                        for (int i = 0; i < firstNameListBox.Items.Count; i++)
+                        {
+                            ListBoxItem firstNameItem = new ListBoxItem();
+                            firstNameItem = firstNameListBox.Items[i] as ListBoxItem;
 
-                        ListBoxItem lastNameItem = new ListBoxItem();
-                        lastNameItem = lastNameListBox.Items[i] as ListBoxItem;
+                            ListBoxItem lastNameItem = new ListBoxItem();
+                            lastNameItem = lastNameListBox.Items[i] as ListBoxItem;
 
-                        sw.WriteLine($"{firstNameItem.Content};{lastNameItem.Content}");
+                            sw.WriteLine($"{firstNameItem.Content};{lastNameItem.Content}");
+                        }
                     }
                 }
             }
